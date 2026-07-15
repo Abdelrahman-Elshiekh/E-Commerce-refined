@@ -5,6 +5,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   ArrowRight,
   CheckCircle2,
+  Eye,
+  EyeOff,
   Lock,
   Mail,
   Phone,
@@ -25,6 +27,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useState } from "react";
 
 const perks = [
   "Fast checkout and saved addresses",
@@ -50,6 +53,8 @@ export default function RegisterPage() {
     },
     mode: "onBlur",
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showRePassword, setShowRePassword] = useState(false);
 
   const onSubmit = async (data: RegisterFormValues) => {
     try {
@@ -196,11 +201,19 @@ export default function RegisterPage() {
                   <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
                   <Input
                     id="password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     {...register("password")}
                     placeholder="Create a strong password"
-                    className="h-11 rounded-xl border-zinc-800 bg-zinc-900/80 pl-10 text-white placeholder:text-zinc-500"
+                    className="h-11 rounded-xl border-zinc-800 bg-zinc-900/80 pl-10 pr-10 text-white placeholder:text-zinc-500"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 transition hover:text-white"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
                 {errors.password && (
                   <p className="text-sm text-red-400">
@@ -220,11 +233,19 @@ export default function RegisterPage() {
                   <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
                   <Input
                     id="rePassword"
-                    type="password"
+                    type={showRePassword ? "text" : "password"}
                     {...register("rePassword")}
                     placeholder="Re-enter your password"
-                    className="h-11 rounded-xl border-zinc-800 bg-zinc-900/80 pl-10 text-white placeholder:text-zinc-500"
+                    className="h-11 rounded-xl border-zinc-800 bg-zinc-900/80 pl-10 pr-10 text-white placeholder:text-zinc-500"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowRePassword((prev) => !prev)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 transition hover:text-white"
+                    aria-label={showRePassword ? "Hide password" : "Show password"}
+                  >
+                    {showRePassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
                 {errors.rePassword && (
                   <p className="text-sm text-red-400">

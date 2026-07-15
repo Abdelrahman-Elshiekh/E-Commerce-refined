@@ -5,6 +5,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   ArrowRight,
   CheckCircle2,
+  Eye,
+  EyeOff,
   Lock,
   Loader2,
   Mail,
@@ -49,7 +51,8 @@ export default function LoginPage() {
     },
   });
   const [isLoading, setIsLoading] = useState(false);
-  
+const [showPassword, setShowPassword] = useState(false);
+
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
 
@@ -145,11 +148,19 @@ export default function LoginPage() {
                   <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
                   <Input
                     id="password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     {...register("password")}
                     placeholder="Enter your password"
-                    className="h-11 rounded-xl border-zinc-800 bg-zinc-900/80 pl-10 text-white placeholder:text-zinc-500"
+                    className="h-11 rounded-xl border-zinc-800 bg-zinc-900/80 pl-10 pr-10 text-white placeholder:text-zinc-500"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 transition hover:text-white"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
                 {errors.password && (
                   <p className="text-sm text-red-400">
