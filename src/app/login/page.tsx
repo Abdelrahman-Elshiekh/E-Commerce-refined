@@ -6,12 +6,14 @@ import {
   ArrowRight,
   CheckCircle2,
   Lock,
+  Loader2,
   Mail,
   Sparkles,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { useSearchParams } from "next/navigation";
 
 import { loginSchema } from "@/app/shcema/loginschema";
 import { Button } from "@/components/ui/button";
@@ -23,6 +25,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { signIn } from "next-auth/react";
+import { useState } from "react";
 
 const perks = [
   "Track your orders in one place",
@@ -44,12 +48,34 @@ export default function LoginPage() {
       password: "",
     },
   });
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
 
-  const onSubmit = (data: LoginFormValues) => {
-    console.log(data);
-    toast.success(`Welcome back, ${data.email}!`);
+  const onSubmit = async (data: LoginFormValues) => {
+    setIsLoading(true);
+
+    try {
+      const response = await signIn("credentials", {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+        callbackUrl: callbackUrl,
+      });
+
+      if (response?.ok) {
+        toast.success("Successfully logged in!");
+        window.location.href = response.url || "/";
+      } else {
+        toast.error("Invalid email or password");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
+  
   return (
     <div className="min-h-[calc(100vh-5rem)] bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.08),_transparent_35%),linear-gradient(135deg,_#09090b_0%,_#111827_100%)] px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto flex max-w-6xl flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
@@ -63,7 +89,8 @@ export default function LoginPage() {
               Sign in to continue shopping.
             </h1>
             <p className="text-lg text-zinc-300 sm:text-xl">
-              Access your saved carts, orders, and curated recommendations in a few seconds.
+              Access your saved carts, orders, and curated recommendations in a
+              few seconds.
             </p>
           </div>
           <ul className="space-y-3">
@@ -125,16 +152,28 @@ export default function LoginPage() {
                   />
                 </div>
                 {errors.password && (
-                  <p className="text-sm text-red-400">{errors.password.message}</p>
+                  <p className="text-sm text-red-400">
+                    {errors.password.message}
+                  </p>
                 )}
               </div>
 
               <Button
+                disabled={isLoading}
+                className="h-11 w-full rounded-xl bg-white text-zinc-950 hover:bg-zinc-200 disabled:opacity-50"
                 type="submit"
-                className="h-11 w-full rounded-xl bg-white text-zinc-950 hover:bg-zinc-200"
               >
-                Sign in
-                <ArrowRight className="ml-2 h-4 w-4" />
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  <>
+                    Sign in
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </>
+                )}
               </Button>
             </form>
 

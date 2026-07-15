@@ -7,7 +7,7 @@ export default async function Home() {
   const { data } = await resp.json();
   return (
     <>
-      <div className="container mx-auto grid grid-cols-1 px-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 my-4 bg-zinc-950  dark:bg-zinc-800 ">
+      <div className="container mx-auto py-4  grid grid-cols-1 px-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 my-4 bg-zinc-950  dark:bg-zinc-800 ">
         {data.map((prod: ProductItem) => {
           return <Productcard key={prod._id} prod={prod} />;
         })}
