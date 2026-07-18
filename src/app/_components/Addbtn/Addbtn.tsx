@@ -15,10 +15,12 @@ export default function Addbtn({ productId }: { productId: string }) {
   const {data,isError,isPending,mutate:additemtocart} =
   useMutation({
     mutationFn: () => addToCart(productId),
-    onSuccess: (data) => {toast.success(data.message)
+    onSuccess: (data) => {
+      toast.success(data.message)
       quaryclient.invalidateQueries({ queryKey: ["GET-Cart"] });
     },
-    onError: (error) => {toast.error('login first to add item to cart')
+    onError: (error) => {
+      toast.error('login first to add item to cart')
       window.location.href='/login'
     },
     

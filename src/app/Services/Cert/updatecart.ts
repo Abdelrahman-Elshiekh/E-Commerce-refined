@@ -10,7 +10,7 @@ export  async function updatecart({ productId, count }: { productId: string; cou
     method: "PUT",
     headers: {
       token: token,
-      "Content-Type": "application/json",
+      "Content-Type": "application/json",   
     },
     body:JSON.stringify({
         count:count
