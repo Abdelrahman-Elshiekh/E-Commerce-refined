@@ -12,8 +12,23 @@ import { Heart, LogOut, ShoppingCart, UserCircle2 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
 
 const Navber = () => {
+
+ const {
+   data: cartdata,
+   isLoading,
+   isError,
+ } = useQuery({
+   queryKey: ["GET-Cart"],
+   queryFn: async () => {
+     const resp = await fetch("/api/cart");
+     const payload = resp.json();
+     return payload;
+   },
+ });
+
   const pathname = usePathname();
   const [isOpen, setIsOpen] = React.useState(false);
   function toggleMenu() {
@@ -31,7 +46,7 @@ const Navber = () => {
   ];
 
   const { status, data: session } = useSession();
-  const cartItems = 3;
+  const cartItems = cartdata?.numOfCartItems;
   const wishlistItems = 5;
 
   function handleLogout() {
