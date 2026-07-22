@@ -29,6 +29,19 @@ const Navber = () => {
    },
  });
 
+ const {
+   data: wishlistdata,
+   isLoading: wishlistlaoding,
+   isError: wishlisterror,
+ } = useQuery({
+   queryKey: ["get-wishlist"],
+   queryFn: async () => {
+     const resp = await fetch("/api/wishlist");
+     const payload = resp.json();
+     return payload;
+   },
+ });
+
   const pathname = usePathname();
   const [isOpen, setIsOpen] = React.useState(false);
   function toggleMenu() {
@@ -46,8 +59,7 @@ const Navber = () => {
   ];
 
   const { status, data: session } = useSession();
-  const cartItems = cartdata?.numOfCartItems;
-  const wishlistItems = 5;
+
 
   function handleLogout() {
     signOut({ callbackUrl: "/login" });
@@ -100,33 +112,54 @@ const Navber = () => {
             </div>
           </div>
 
-          <div className={`${isOpen ? "flex" : "hidden"} w-full md:flex md:w-auto`}>
+          <div
+            className={`${isOpen ? "flex" : "hidden"} w-full md:flex md:w-auto`}
+          >
             <ul className="font-medium flex flex-col gap-2 py-2 px-1 md:p-0 rounded-base bg-neutral-secondary-soft md:flex-row md:items-center md:gap-3 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-transparent">
               {status === "authenticated" ? (
                 <>
                   <li className="flex items-center gap-2">
-                    <Link href="/cart" className="relative p-2 text-zinc-200 hover:text-white">
+                    <Link
+                      href="/cart"
+                      className="relative p-2 text-zinc-200 hover:text-white"
+                    >
                       <ShoppingCart className="h-5 w-5" />
-                      <Badge className="absolute -right-1 -top-1 h-5 min-w-5 rounded-full bg-rose-500 px-1 text-[10px] text-white">
-                        {cartItems}
-                      </Badge>
+                      {cartdata?.numOfCartItems > 0 ? (
+                        <Badge className="absolute -right-1 -top-1 h-5 min-w-5 rounded-full bg-rose-500 px-1 text-[10px] text-white">
+                          {cartdata?.numOfCartItems}
+                        </Badge>
+                      ) : (
+                        ""
+                      )}
                     </Link>
 
-                    <Link href="/wishlist" className="relative p-2 text-zinc-200 hover:text-white">
+                    <Link
+                      href="/wishlist"
+                      className="relative p-2 text-zinc-200 hover:text-white"
+                    >
                       <Heart className="h-5 w-5" />
-                      <Badge className="absolute -right-1 -top-1 h-5 min-w-5 rounded-full bg-amber-500 px-1 text-[10px] text-white">
-                        {wishlistItems}
-                      </Badge>
+                      {wishlistdata?.count > 0 ? (
+                        <Badge className="absolute -right-1 -top-1 h-5 min-w-5 rounded-full bg-amber-500 px-1 text-[10px] text-white">
+                          {wishlistdata?.count}
+                        </Badge>
+                      ) : (
+                        ""
+                      )}
                     </Link>
 
                     <DropdownMenu>
                       <DropdownMenuTrigger className="rounded-full border border-zinc-700 bg-zinc-900/80 px-3 py-2 text-zinc-200 hover:bg-zinc-800 hover:text-white">
                         <UserCircle2 className="mr-2 h-4 w-4" />
-                        <span className="font-medium">{session?.user?.name || "Profile"}</span>
+                        <span className="font-medium">
+                          {session?.user?.name || "Profile"}
+                        </span>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
                         <DropdownMenuItem>
-                          <Link href="/profile" className="flex w-full items-center gap-2">
+                          <Link
+                            href="/profile"
+                            className="flex w-full items-center gap-2"
+                          >
                             <UserCircle2 className="h-4 w-4" />
                             Profile
                           </Link>

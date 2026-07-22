@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
+import { Minus, Plus, ShoppingBag, Trash2, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -11,8 +11,12 @@ import { Root, Product } from "./_components/cart-interface";
 import { Deleteitem } from "../Services/Cert/delete-cart-items";
 import { toast } from "sonner";
 import { updatecart } from "../Services/Cert/updatecart";
+import { clearcart } from "../Services/Cert/clearcart";
 
 const Cart = () => {
+  const [isCleared, setIsCleared] = useState(false);
+  const queryClient = useQueryClient();
+
   const {
     data: cartdata,
     isLoading,
@@ -25,6 +29,23 @@ const Cart = () => {
       return payload;
     },
   });
+
+
+  const { mutate: clearthecart, isPending: clearloading } = useMutation({
+    mutationFn: clearcart,
+    onSuccess: () => {
+      toast.success("Cart cleared successfully");
+      setIsCleared(true);
+      queryClient.invalidateQueries({ queryKey: ["GET-Cart"] });
+    },
+    onError: (error) => {
+      console.error(error);
+      toast.error("Failed to clear cart. Try again.");
+    },
+  });
+
+ 
+  
 
   if (isLoading) {
     return (
@@ -61,7 +82,7 @@ const Cart = () => {
   }
 
   const products: Product[] = cartdata?.data?.products ?? [];
-  const isEmpty = products.length === 0;
+  const isEmpty = products.length === 0 || isCleared;
 
   return (
     <section className="min-h-screen bg-zinc-950 py-6 text-white sm:py-12">
@@ -77,8 +98,8 @@ const Cart = () => {
           </div>
           {!isEmpty && (
             <Badge className="rounded-full border border-zinc-800 bg-zinc-900/80 px-4 py-1.5 text-[10px] uppercase tracking-[0.18em] text-zinc-300 sm:text-sm">
-              {cartdata.numOfCartItems} item
-              {cartdata.numOfCartItems !== 1 && "s"}
+              {isCleared ? 0 : cartdata.numOfCartItems} item
+              {(isCleared ? 0 : cartdata.numOfCartItems) !== 1 && "s"}
             </Badge>
           )}
         </div>
@@ -90,13 +111,15 @@ const Cart = () => {
             </div>
             <div>
               <p className="text-lg font-semibold text-white">
-                Your cart is empty
+                {isCleared ? "Cart cleared" : "Your cart is empty"}
               </p>
               <p className="mt-1 text-sm text-zinc-500">
-                Items you add will show up here.
+                {isCleared
+                  ? "You removed all products from your basket."
+                  : "Items you add will show up here."}
               </p>
             </div>
-            <Link href="/products">
+            <Link href="/">
               <Button className="mt-2 rounded-full bg-yellow-400 px-6 text-zinc-950 hover:bg-yellow-300">
                 Browse products
               </Button>
@@ -105,6 +128,18 @@ const Cart = () => {
         ) : (
           <div className="grid gap-4 sm:gap-6 lg:grid-cols-[1.7fr_1fr] items-start">
             <div className="flex flex-col gap-4">
+              <div className="flex justify-end">
+                <Button
+                  onClick={()=>{clearthecart();}}
+                  disabled={clearloading} // Disable button while request runs
+                  variant="destructive"
+                  className="rounded-full bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500 hover:text-white transition-all text-xs font-bold uppercase tracking-wider px-4 py-2 disabled:opacity-50"
+                >
+                  <XCircle className="h-4 w-4 mr-2" />
+                  {clearloading ? "Clearing..." : "Clear Cart"}
+                </Button>
+              </div>
+
               {products.map((item) => (
                 <CartRow key={item._id} item={item} />
               ))}
@@ -134,7 +169,7 @@ const CartRow = ({ item }: { item: Product }) => {
   });
 
   function handleupdate(productId: string, count: number) {
-    if (count < 1) return; // Prevent updating to 0 or negative values via minus button
+    if (count < 1) return;
     updatecartitem({ productId, count });
   }
 
@@ -150,8 +185,6 @@ const CartRow = ({ item }: { item: Product }) => {
     },
   });
 
-  // Calculate the live line total for the UI
- 
   const isWorking = isDeleting || updateloading;
 
   return (
@@ -160,7 +193,7 @@ const CartRow = ({ item }: { item: Product }) => {
         isWorking ? "opacity-50 pointer-events-none" : ""
       }`}
     >
-      <div className="mx-auto flex h-40 w-40 sm:h-40 sm:w-40  items-center justify-center overflow-hidden rounded-2xl bg-white p-3  border border-zinc-800/40">
+      <div className="mx-auto flex h-40 w-40 sm:h-40 sm:w-40 items-center justify-center overflow-hidden rounded-2xl bg-white p-3 border border-zinc-800/40">
         <img
           src={item.product.imageCover}
           alt={item.product.title}
@@ -176,7 +209,7 @@ const CartRow = ({ item }: { item: Product }) => {
           </p>
 
           <h3 className="mt-1.5 text-lg font-black text-zinc-100 sm:text-xl lg:text-2xl leading-tight line-clamp-2">
-            {item.product.title} 
+            {item.product.title}
           </h3>
 
           <Badge
@@ -188,7 +221,6 @@ const CartRow = ({ item }: { item: Product }) => {
         </div>
       </div>
 
-      
       <div className="flex flex-row items-center justify-between md:justify-end gap-6 border-t md:border-t-0 pt-4 md:pt-0 border-zinc-800/60 self-stretch md:self-auto">
         <div className="flex items-center gap-2 rounded-full border border-zinc-700 bg-zinc-950 px-1.5 py-1.5 shadow-inner">
           <button
@@ -214,10 +246,9 @@ const CartRow = ({ item }: { item: Product }) => {
           </button>
         </div>
 
-        {/* Dynamic Line Price Added Here */}
         <div className="text-right min-w-[120px]">
           <span className="text-xl font-black tracking-tight text-white sm:text-2xl block">
-            EGP {item.price}
+            EGP {(item.price * item.count).toFixed(2)}
           </span>
         </div>
 

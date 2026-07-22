@@ -6,6 +6,7 @@ import { ShoppingBag } from 'lucide-react';
 import { addToCart } from '@/app/Services/Cert/Addtocart';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { addToWishlist } from '@/app/Services/wishlist/addtowishlist';
 
 
 export default function Addbtn({ productId }: { productId: string }) {
@@ -21,10 +22,33 @@ export default function Addbtn({ productId }: { productId: string }) {
     },
     onError: (error) => {
       toast.error('login first to add item to cart')
-      window.location.href='/login'
+        setTimeout(() => {
+          window.location.href = "/login";
+        }, 3000);
     },
     
 })
+
+  const {
+    data: wishlistdata,
+    isError: wishlisteror,
+    isPending: wishlistpending,
+    mutate: additemtowishlist,
+  } = useMutation({
+    mutationFn: () => addToWishlist(productId),
+    onSuccess: (data) => {
+      toast.success(data.message);
+
+      quaryclient.invalidateQueries({ queryKey: ["get-wishlist"] });
+    },
+    onError: (error) => {
+      toast.error("login first to add item to wishlist");
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 3000);
+      
+    },
+  });
 
 
   return (
@@ -37,6 +61,7 @@ export default function Addbtn({ productId }: { productId: string }) {
         Add to Cart
       </Button>
       <Button
+        onClick={() => additemtowishlist()}
         variant="ghost"
         className="w-full border border-zinc-800 bg-white/5 text-white hover:bg-white hover:text-zinc-950"
       >
